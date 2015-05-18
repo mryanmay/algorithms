@@ -1,4 +1,4 @@
-### Fixnum Centipad
+# Fixnum Centipad
 
 ```
 Given a range of Fixnum (1..9)
@@ -12,6 +12,7 @@ Also see https://www.youtube.com/watch?v=sglZGSwK6ow
 ```
 
 Usage Examples
+--------------
 
 ```ruby
 >> Centipad.new(1,9,100,true).solve
@@ -43,5 +44,8 @@ Usage Examples
 ```
 
 Version Benchmarking
+--------------------
 
 ![Version Benchmarks](benchmark.png?raw=true)
+
+[Raw Data](https://docs.google.com/spreadsheets/d/17VNgQpIoQLcKWZyo1UBVckIq4N8rZva7K82H4yGoj3k/edit?usp=sharing)
