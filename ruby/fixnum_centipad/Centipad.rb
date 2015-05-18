@@ -1,5 +1,13 @@
-# Improves on v3 by catching unnecessary concat in the case of very negative current state.
-# Still always building the Add and Subtract
+# Features:
+#   + Global object memory optimization (v2)
+#   + Concat limiting (v3, v4)
+#   + Add limiting (v5)
+#   + Subtract limiting (v5)
+#
+# Potential Improvements:
+#   - current_value not always available or may be evaluated too often
+#   - ditch eval() for faster expression evaluator (build one?)
+#   - change arguments to a params hash
 
 class Centipad
   def initialize(min=1, max=9, equal=100, print=false)
@@ -29,11 +37,15 @@ class Centipad
       end
       return
     else
+      # Concat limiting logic
       concat = true
+      current_value = nil
 
-      # If no + yet or the most recent is addition, current term should be no more than 100 larger than rest of remaining numbers (maybe ensure length before eval'ing?)
-      if @current_location > 1 && @current_location + 1 < @current_state.size
+      # TODO: Revisit this if statement. Not sure about @current_state.size/2 being the optimal case.
+      if @current_location > @current_state.size/2 && @current_location + 1 < @current_state.size
         current_value = eval(@current_state[0,@current_location].join())
+
+        # If no + yet or the most recent is addition, current term should be no more than 100 larger than rest of remaining numbers
         if @last_add == true && current_value > @current_state[@current_location+1, @current_state.size-1].join().to_i + @equal
           concat = false
         end
@@ -50,20 +62,24 @@ class Centipad
       end
 
       # Add Operation
-      @current_state.insert(@current_location, '+')
-      @current_location += 2
-      @last_add = true
-      loop()
-      @current_location -= 2
-      @current_state.delete_at(@current_location)
+      if current_value.nil? || current_value >= -(@current_state[@current_location, @current_state.size-1].join().to_i + @equal)
+        @current_state.insert(@current_location, '+')
+        @current_location += 2
+        @last_add = true
+        loop()
+        @current_location -= 2
+        @current_state.delete_at(@current_location)
+      end
 
       # Subtract Operation
-      @current_state.insert(@current_location, '-')
-      @current_location += 2
-      @last_add = false
-      loop()
-      @current_location -= 2
-      @current_state.delete_at(@current_location)
+      if current_value.nil? || current_value <= @current_state[@current_location, @current_state.size-1].join().to_i + @equal
+        @current_state.insert(@current_location, '-')
+        @current_location += 2
+        @last_add = false
+        loop()
+        @current_location -= 2
+        @current_state.delete_at(@current_location)
+      end
     end
   end
 end
