@@ -41,3 +41,7 @@ Usage Examples
 => 11
    Time elapsed 61.615 milliseconds
 ```
+
+Version Benchmarking
+
+![Version Benchmarks](benchmark.png?raw=true)
