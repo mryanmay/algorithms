@@ -1,4 +1,5 @@
-# Improves on v2 by limiting the concat recursion if very positive (unable to be within @equal) in current state
+# Improves on v3 by catching unnecessary concat in the case of very negative current state.
+# Still always building the Add and Subtract
 
 class Centipad
   def initialize(min=1, max=9, equal=100, print=false)
@@ -28,15 +29,27 @@ class Centipad
       end
       return
     else
-      # Concat
+      concat = true
+
       # If no + yet or the most recent is addition, current term should be no more than 100 larger than rest of remaining numbers (maybe ensure length before eval'ing?)
-      unless @last_add == true && @current_location > 1 && @current_location + 1 < @current_state.size && eval(@current_state[0,@current_location].join()) > @current_state[@current_location+1, @current_state.size-1].join().to_i + @equal
+      if @current_location > 1 && @current_location + 1 < @current_state.size
+        current_value = eval(@current_state[0,@current_location].join())
+        if @last_add == true && current_value > @current_state[@current_location+1, @current_state.size-1].join().to_i + @equal
+          concat = false
+        end
+        if @last_add == false &&  current_value < -(@current_state[@current_location+1, @current_state.size-1].join().to_i + @equal)
+          concat = false
+        end
+      end
+
+      # Concat Operation
+      if concat
         @current_location += 1
         loop()
         @current_location -= 1
       end
 
-      # Add
+      # Add Operation
       @current_state.insert(@current_location, '+')
       @current_location += 2
       @last_add = true
@@ -44,7 +57,7 @@ class Centipad
       @current_location -= 2
       @current_state.delete_at(@current_location)
 
-      # Subtract
+      # Subtract Operation
       @current_state.insert(@current_location, '-')
       @current_location += 2
       @last_add = false
