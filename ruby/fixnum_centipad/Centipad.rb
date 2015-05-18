@@ -1,5 +1,4 @@
-# Improves on V1 by maintaining a global object rather than passing a new array to each recursive call.
-# Should reduce memory required significantly which should allow computing larger data sets.
+# Improves on v2 by limiting the concat recursion if very positive (unable to be within @equal) in current state
 
 class Centipad
   def initialize(min=1, max=9, equal=100, print=false)
@@ -8,6 +7,7 @@ class Centipad
     @current_state = (min..max).to_a
     @current_location = 1
     @solutions = 0
+    @last_add = true
   end
 
   def solve()
@@ -21,20 +21,25 @@ class Centipad
   def loop()
     if @current_location >= @current_state.size
       # Evaluate and print
-      if eval(@current_state.join()) == @equal
-        puts @current_state.join() if @print
+      solution = @current_state.join()
+      if eval(solution) == @equal
+        puts solution if @print
         @solutions += 1
       end
       return
     else
       # Concat
-      @current_location += 1
-      loop()
-      @current_location -= 1
+      # If no + yet or the most recent is addition, current term should be no more than 100 larger than rest of remaining numbers (maybe ensure length before eval'ing?)
+      unless @last_add == true && @current_location > 1 && @current_location + 1 < @current_state.size && eval(@current_state[0,@current_location].join()) > @current_state[@current_location+1, @current_state.size-1].join().to_i + @equal
+        @current_location += 1
+        loop()
+        @current_location -= 1
+      end
 
       # Add
       @current_state.insert(@current_location, '+')
       @current_location += 2
+      @last_add = true
       loop()
       @current_location -= 2
       @current_state.delete_at(@current_location)
@@ -42,6 +47,7 @@ class Centipad
       # Subtract
       @current_state.insert(@current_location, '-')
       @current_location += 2
+      @last_add = false
       loop()
       @current_location -= 2
       @current_state.delete_at(@current_location)
