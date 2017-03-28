@@ -1,2 +1,2 @@
 # algorithms
-Programming Algorithms
+Programming Algorithms and Exercises
